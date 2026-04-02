@@ -11,9 +11,11 @@
 // It also tries to expose a stable local hostname on many home networks:
 //   http://gree.local/
 //
-// Optional:
-// - Set WIFI_USE_STATIC_IP and the IP values below if you want the same LAN IP
-//   every time.
+// Recommended for stable local access:
+// - Keep WIFI_USE_STATIC_IP enabled and set the IP values below to match your
+//   router subnet if you want the same LAN IP every time.
+// - Example bookmark after setup:
+//   http://192.168.1.60/
 // - Set WIFI_PUBLIC_BASE_URL if you expose the ESP32 through port forwarding,
 //   DDNS, a reverse proxy, or a tunnel. Example:
 //   #define WIFI_PUBLIC_BASE_URL "https://your-remote.example.com"
@@ -24,7 +26,7 @@ constexpr char kWifiPassword[] = "YOUR_WIFI_PASSWORD";
 
 #define WIFI_PUBLIC_BASE_URL ""
 
-#define WIFI_USE_STATIC_IP 0
+#define WIFI_USE_STATIC_IP 1
 #define WIFI_STATIC_IP1 192
 #define WIFI_STATIC_IP2 168
 #define WIFI_STATIC_IP3 1

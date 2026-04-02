@@ -85,7 +85,7 @@ String wifiModeLabel = "offline";
 String wifiAddress = "offline";
 String wifiHostLabel = String(kDeviceHostname) + ".local";
 String preferredBaseUrl = "offline";
-String lastEventMessage = "Ready to control the Gree remote.";
+String lastEventMessage = "Ready.";
 String lastNativeAcSummary;
 bool mdnsActive = false;
 bool preferencesReady = false;
@@ -406,17 +406,17 @@ String getGreeDisplayValue() {
 
 String getGreeDisplayNote() {
   const uint8_t source = greeAc.getDisplayTempSource();
-  if (!greeAc.getPower()) return "Remote is off";
+  if (!greeAc.getPower()) return "Off";
   switch (source) {
     case kGreeDisplayTempSet:
-      return "Showing set temperature";
+      return "Set temp";
     case kGreeDisplayTempInside:
-      return "Indoor reading selected on AC";
+      return "Indoor temp mode";
     case kGreeDisplayTempOutside:
-      return "Outdoor reading selected on AC";
+      return "Outdoor temp mode";
     case kGreeDisplayTempOff:
     default:
-      return "Display hidden";
+      return "Display off";
   }
 }
 
@@ -478,8 +478,7 @@ void storeDebugCapture(const decode_results& capture) {
   debugHexValue = resultToHexidecimal(&capture);
   debugRawLength = capture.rawlen;
   hasDebugCapture = true;
-  debugLastEvent = String("Captured remote value: ") + debugProtocol +
-                   " / " + debugHexValue;
+  debugLastEvent = String("IR capture: ") + debugProtocol + " " + debugHexValue;
   Serial.println(debugLastEvent);
 }
 
@@ -601,8 +600,8 @@ bool isSupportedButton(const String& buttonId) {
 }
 
 String sendNativeGreeButtonCode(const String& buttonId, uint16_t count) {
-  if (count == 0) return "Send count must be at least 1.";
-  if (!isSupportedButton(buttonId)) return "Unknown Gree button.";
+  if (count == 0) return "Count must be at least 1.";
+  if (!isSupportedButton(buttonId)) return "Unknown button.";
 
   if (buttonId == "power") {
     greeAc.setPower(!greeAc.getPower());
@@ -693,8 +692,7 @@ String sendNativeGreeButtonCode(const String& buttonId, uint16_t count) {
 
   lastNativeAcSummary = greeAc.toString();
   saveCurrentGreeState();
-  lastEventMessage = String("Sent Gree command: ") + buttonId + ". " +
-                     lastNativeAcSummary;
+  lastEventMessage = String("Sent: ") + buttonId;
   Serial.println(lastEventMessage);
   return lastEventMessage;
 }
@@ -703,7 +701,7 @@ String getRootPage() {
   return R"HTML(<!doctype html>
 <html><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gree YAW1F Remote</title>
+<title>ESP32 Universal Gree Remote</title>
 <style>
 :root{--bg:#dee8ec;--bg2:#f7fafc;--remote:#f3f2ef;--remote-edge:#dad7d1;--ink:#1d2d39;--muted:#64717a;--lcd:#e6efdc;--lcd2:#f3f7ed;--lcd-ink:#4b5651;--silver1:#fcfcfb;--silver2:#d7d9d7;--silver3:#b8bab8;--orange1:#efb46c;--orange2:#d88833;--orange3:#be6c22}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Segoe UI",Tahoma,sans-serif;background:radial-gradient(circle at top left,rgba(26,82,72,.12),transparent 25%),linear-gradient(180deg,var(--bg),var(--bg2));color:var(--ink)}button{font:inherit}
@@ -770,7 +768,7 @@ void sendJsonResponse(int statusCode, bool ok, const String& message) {
 
 bool requireArg(const char* name) {
   if (server.hasArg(name)) return true;
-  sendJsonResponse(400, false, String("Missing argument: ") + name);
+  sendJsonResponse(400, false, String("Missing: ") + name);
   return false;
 }
 
@@ -800,7 +798,7 @@ void handleButtonSendRequest() {
 
   const String buttonId = server.arg("buttonId");
   if (!isSupportedButton(buttonId)) {
-    sendJsonResponse(404, false, "Unknown Gree button.");
+    sendJsonResponse(404, false, "Unknown button.");
     return;
   }
 
@@ -811,17 +809,17 @@ void handleButtonSendRequest() {
 
 void handleRemoteResetRequest() {
   resetNativeGreeState();
-  lastEventMessage = "Remote state reset to defaults.";
+  lastEventMessage = "Reset to defaults.";
   sendJsonResponse(200, true, lastEventMessage);
 }
 
 void handleNotFoundRequest() {
-  sendJsonResponse(404, false, "Route not found.");
+  sendJsonResponse(404, false, "Not found.");
 }
 
 void printHelp() {
   Serial.println();
-  Serial.println(F("Gree YAW1F Remote Web UI"));
+  Serial.println(F("ESP32 Universal Gree Remote"));
   Serial.println(F("Routes:"));
   Serial.println(F("  /"));
   Serial.println(F("  /api/status"));
@@ -885,7 +883,7 @@ void handleCommand(const String& command) {
   }
   if (command == "reset") {
     resetNativeGreeState();
-    lastEventMessage = "Remote state reset from serial command.";
+    lastEventMessage = "Reset from serial.";
     Serial.println(lastEventMessage);
     return;
   }
@@ -944,7 +942,7 @@ void connectToWifi() {
     wifiModeLabel = "fallback_ap";
     wifiAddress = WiFi.softAPIP().toString();
     updatePreferredBaseUrl();
-    lastEventMessage = "Wi-Fi not configured. Started fallback access point.";
+    lastEventMessage = "No Wi-Fi config. Fallback AP started.";
     Serial.println(lastEventMessage);
     return;
   }
@@ -965,7 +963,7 @@ void connectToWifi() {
     wifiModeLabel = "station";
     wifiAddress = WiFi.localIP().toString();
     updatePreferredBaseUrl();
-    lastEventMessage = String("Connected to Wi-Fi: ") + kWifiSsid;
+    lastEventMessage = String("Wi-Fi connected: ") + kWifiSsid;
     Serial.println(lastEventMessage);
     return;
   }
@@ -976,7 +974,7 @@ void connectToWifi() {
   wifiModeLabel = "fallback_ap";
   wifiAddress = WiFi.softAPIP().toString();
   updatePreferredBaseUrl();
-  lastEventMessage = "Wi-Fi connect failed. Started fallback access point.";
+  lastEventMessage = "Wi-Fi failed. Fallback AP started.";
   Serial.println(lastEventMessage);
 }
 
@@ -993,7 +991,7 @@ void setup() {
 
   if (kEnableDebugIrReader) {
     irrecv.enableIRIn();
-    debugLastEvent = "IR reader armed. Point another remote at the receiver.";
+    debugLastEvent = "IR reader ready.";
   } else {
     debugLastEvent = "IR reader disabled in code.";
   }
