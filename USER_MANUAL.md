@@ -33,16 +33,18 @@ pio run --target upload
 Try:
 
 - `http://<device-ip>/`
-- `http://gree.local/`
+- `http://irremote.local/` (recommended)
 
-If Wi-Fi is missing or fails, the board starts an access point:
+If Wi-Fi is missing or fails, the board starts a WiFi provisioning hotspot:
 
-- SSID: `ESP32-IR-Bridge`
-- Password: `irbridge123`
+- SSID: `UNIVERSAL IR`
+- Password: `-12345678`
 
 Then open:
 
 - `http://192.168.4.1/`
+
+See [WIFI_SETUP_QUICK_START.md](WIFI_SETUP_QUICK_START.md) for detailed provisioning instructions.
 
 ## Buttons
 
@@ -116,10 +118,10 @@ If the page does not open:
 - check serial output for the IP
 - try the fallback AP
 
-If `gree.local` does not open:
+If `irremote.local` does not open:
 
-- use the IP directly
-- or keep the fixed IP setting enabled
+- use the IP directly (shown in serial monitor)
+- or keep the fixed IP setting enabled in `include/wifi_config.h`
 
 If IR receive is not showing values:
 

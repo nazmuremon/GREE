@@ -1,15 +1,17 @@
 #pragma once
 
 // Copy this file to include/wifi_config.h and fill in your Wi-Fi details.
-// If wifi_config.h is missing or left blank, the ESP32 starts its own
-// fallback access point:
-//   SSID: ESP32-IR-Bridge
-//   Password: irbridge123
+// 
+// If no WiFi credentials are configured, the ESP32 starts a provisioning hotspot:
+//   SSID: UNIVERSAL IR
+//   Password: 12345678
+//   URL: http://192.168.4.1
+// You can also press the reset button for 5 seconds to re-enter provisioning mode.
 //
-// When connected to your home Wi-Fi, the ESP serves the IR control page on:
+// When connected to your home Wi-Fi, the ESP32 serves the IR control page on:
 //   http://<device-ip>/
-// It also tries to expose a stable local hostname on many home networks:
-//   http://gree.local/
+// And also exposes a stable local hostname:
+//   http://irremote.local/
 //
 // Recommended for stable local access:
 // - Keep WIFI_USE_STATIC_IP enabled and set the IP values below to match your
