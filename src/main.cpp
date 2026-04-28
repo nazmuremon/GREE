@@ -59,7 +59,7 @@ constexpr uint32_t kWifiConnectTimeoutMs = 15000;
 constexpr uint16_t kCaptureBufferSize = 1024;
 constexpr uint8_t kCaptureTimeoutMs = 50;
 // MQTT Configuration
-constexpr char kMqttBrokerHost[] = "broker.hivemq.com";
+constexpr char kMqttBrokerHost[] = "test.mosquitto.org";
 constexpr uint16_t kMqttBrokerPort = 1883;
 constexpr char kMqttUsername[] = "";
 constexpr char kMqttPassword[] = "";
