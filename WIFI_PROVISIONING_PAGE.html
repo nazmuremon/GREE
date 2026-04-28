@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNIVERSAL IR WiFi Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .status {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+    .status.show { display: block; }
+    .status.success { 
+      background: #f0fdf4;
+      border-left-color: #10b981;
+    }
+    .status.error { 
+      background: #fef2f2;
+      border-left-color: #ef4444;
+    }
+    .status.success { color: #065f46; }
+    .status.error { color: #7f1d1d; }
+    .status.info { color: #1e40af; }
+    
+    .section {
+      margin-bottom: 25px;
+    }
+    .section-title {
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .networks {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      max-height: 250px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    .network {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .network:last-child { border-bottom: none; }
+    .network:hover { background: #f9fafb; }
+    .network.active {
+      background: #f0f4ff;
+      color: #667eea;
+      font-weight: 600;
+    }
+    .network-name { flex: 1; }
+    .network-signal { font-size: 12px; color: #999; }
+    
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: #f3f4f6;
+      color: #333;
+      margin-top: 5px;
+    }
+    button.secondary:hover:not(:disabled) {
+      background: #e5e7eb;
+      box-shadow: none;
+    }
+    
+    .help-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .demo-note {
+      background: #f0f4ff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #667eea;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌐 UNIVERSAL IR</h1>
+    <div class="subtitle">WiFi Setup - Connect to your home network</div>
+    
+    <div class="status" id="status"></div>
+    
+    <div class="section">
+      <div class="section-title">Available Networks</div>
+      <div class="networks" id="networks">
+        <div class="network" style="color: #999; justify-content: center; padding: 30px 15px;">
+          <span class="spinner"></span>Scanning networks...
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Network Name (SSID)</div>
+      <input type="text" id="ssid" placeholder="Enter network name" autocomplete="off">
+      <div class="help-text">Select from list or type manually</div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">Password</div>
+      <input type="password" id="password" placeholder="Enter WiFi password" autocomplete="off">
+      <div class="help-text">Leave empty for open networks</div>
+    </div>
+    
+    <button onclick="connectWifi()" id="connectBtn">Connect to WiFi</button>
+    <button class="secondary" onclick="rescanNetworks()">Rescan Networks</button>
+    
+    <div class="demo-note">
+      📱 DEMO MODE - This is what you see when pressing the button for 5 seconds on your ESP32
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    
+    function showStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.className = 'status show ' + type;
+    }
+    
+    // DEMO: Sample WiFi networks (in real ESP32, this comes from actual scan)
+    const demoNetworks = [
+      { ssid: "Guest WiFi", rssi: -62 },
+      { ssid: "Neighbor's WiFi", rssi: -75 },
+      { ssid: "Coffee Shop WiFi", rssi: -80 }
+    ];
+    
+    async function scanNetworks() {
+      try {
+        // DEMO: Simulate network scan after 1 second delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (!demoNetworks || demoNetworks.length === 0) {
+          document.getElementById('networks').innerHTML = 
+            '<div class="network" style="color: #999; justify-content: center;">No networks found</div>';
+          return;
+        }
+        
+        const networksHtml = demoNetworks.map(net => `
+          <div class="network" onclick="selectNetwork('${escapeHtml(net.ssid)}')">
+            <span class="network-name">${escapeHtml(net.ssid)}</span>
+            <span class="network-signal">${net.rssi}dBm</span>
+          </div>
+        `).join('');
+        
+        document.getElementById('networks').innerHTML = networksHtml;
+      } catch (e) {
+        showStatus('Failed to scan networks', 'error');
+      }
+    }
+    
+    function selectNetwork(ssid) {
+      document.getElementById('ssid').value = ssid;
+      document.getElementById('password').focus();
+      showStatus('Network selected! Enter password and click Connect.', 'info');
+    }
+    
+    async function connectWifi() {
+      const ssid = document.getElementById('ssid').value.trim();
+      const password = document.getElementById('password').value;
+      
+      if (!ssid) {
+        showStatus('Please enter a network name', 'error');
+        return;
+      }
+      
+      document.getElementById('connectBtn').disabled = true;
+      showStatus('Connecting to WiFi... ' + ssid, 'info');
+      
+      try {
+        // DEMO: Simulate connection attempt
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Demo success
+        showStatus('✓ Connected! Redirecting to http://irremote.local ...', 'success');
+        document.getElementById('connectBtn').disabled = false;
+        
+        setTimeout(() => {
+          showStatus('✓ Successfully connected to: ' + ssid, 'success');
+        }, 2000);
+        
+      } catch (e) {
+        showStatus('Connection failed: ' + e.message, 'error');
+        document.getElementById('connectBtn').disabled = false;
+      }
+    }
+    
+    function rescanNetworks() {
+      document.getElementById('networks').innerHTML = 
+        '<div class="network" style="color: #999; justify-content: center; padding: 30px 15px;"><span class="spinner"></span>Scanning...</div>';
+      scanNetworks();
+    }
+    
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+    
+    // Initial scan
+    scanNetworks();
+  </script>
+</body>
+</html>
