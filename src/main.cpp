@@ -59,12 +59,15 @@ constexpr uint32_t kWifiConnectTimeoutMs = 15000;
 constexpr uint16_t kCaptureBufferSize = 1024;
 constexpr uint8_t kCaptureTimeoutMs = 50;
 // MQTT Configuration
+// Device (ESP32): Uses TCP MQTT on port 1883 (standard)
+// Browser (Web UI): Uses WSS (WebSocket Secure) on port 8884
+// Both connect to the same public HiveMQ broker with no authentication
 constexpr char kMqttBrokerHost[] = "broker.hivemq.com";
-constexpr uint16_t kMqttBrokerPort = 1883;
-constexpr char kMqttUsername[] = "";
-constexpr char kMqttPassword[] = "";
-constexpr char kMqttTopicCommand[] = "remote/command";
-constexpr char kMqttTopicStatus[] = "remote/status";
+constexpr uint16_t kMqttBrokerPort = 1883;  // TCP MQTT port (not WebSocket)
+constexpr char kMqttUsername[] = "";  // No auth needed for HiveMQ public broker
+constexpr char kMqttPassword[] = "";  // No auth needed for HiveMQ public broker
+constexpr char kMqttTopicCommand[] = "remote/command";  // Browser sends IR commands here
+constexpr char kMqttTopicStatus[] = "remote/status";    // Device publishes AC state here
 // WiFi provisioning AP credentials (used when no saved WiFi or manual provisioning)
 constexpr char kProvisioningApSsid[] = "UNIVERSAL IR";
 constexpr char kProvisioningApPassword[] = "12345678";
