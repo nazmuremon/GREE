@@ -1,74 +1,262 @@
-# ESP32 Universal Gree Remote
+# ESP32 Universal Gree Remote - MQTT Edition
 
-ESP32 web-based IR remote for Gree air conditioners that use the `YAW1F` protocol. This project turns an ESP32 into a Wi-Fi AC remote with a browser UI, persistent state saving, fallback access point mode, and IR capture/debug support.
+Universal WiFi-based Gree air conditioner remote using MQTT for cloud connectivity. Control your AC from any device globally via a web browser.
 
-If you want to control a Gree AC from your phone, tablet, or laptop without building a full smart home stack, this firmware serves a remote-style web page and sends the matching infrared commands through an IR LED.
+**🌐 Live Demo**: [Universal Gree Remote Web Control](https://YOUR_USERNAME.github.io/esp32-gree-remote-web)
+*(Replace `YOUR_USERNAME` with your GitHub username after setup)*
+
+## Architecture
+
+- **ESP32 Device**: WiFi provisioning + IR control + MQTT client
+- **MQTT Broker**: Cloud message hub (128.199.20.163:1883)
+- **Web UI**: Hosted on GitHub Pages (no installation needed)
+- **Communication**: MQTT messages for universal access
 
 ## What This Project Does
 
-- Serves a built-in web remote from the ESP32
-- Sends native Gree `YAW1F` IR commands on `GPIO12`
-- Reads IR signals for debugging on `GPIO15`
-- Saves the last AC state in flash and restores it after reboot
-- Connects to your Wi-Fi network or starts its own fallback AP
-- Supports local IP access, `gree.local`, and an optional public base URL
+- 🌍 **Universal Control**: Access your AC from anywhere globally
+- 📱 **No App**: Works in any web browser
+- 🔐 **Secure Setup**: WiFi provisioning hotspot
+- 💾 **Persistent Config**: Saves WiFi credentials in NVS
+- 🔗 **Cloud Connected**: Real-time MQTT communication
+- 🎨 **Realistic UI**: Remote replica interface
+- ⚡ **Lightweight Device**: WiFi + MQTT only (no web server)
 
-## Best Fit For
+## Quick Start
 
-- Gree air conditioner projects
-- ESP32 IR remote builds
-- DIY Wi-Fi AC controller setups
-- PlatformIO + Arduino infrared projects
-- Users who want a simple local web interface instead of a cloud app
-
-## Key Features
-
-- Remote-style single-page UI that looks and behaves like a handheld AC remote
-- Native control for power, mode, fan, temperature, swing, timer, sleep, turbo, eco, light, Wi-Fi, I Feel, and display options
-- Flash-backed state persistence using `Preferences`
-- Fallback access point mode when Wi-Fi is missing or fails
-- mDNS hostname support with `http://gree.local/`
-- Debug IR reader to inspect captured protocol, bit count, raw length, and hex value
-- Simple HTTP API for status, button sending, reset, and IR capture
-
-## Supported Hardware And Protocol
-
-- ESP32 development board
-- Gree AC units that respond to the `YAW1F` infrared protocol
-- IR LED transmit stage driven by a `2N2222` or similar transistor
-- IR receiver module such as `VS1838B` or `TSOP1838`
-
-Wiring details are in [CIRCUIT_DIAGRAM.md](CIRCUIT_DIAGRAM.md).
-
-## How It Works
-
-The firmware uses `IRremoteESP8266` to build and transmit Gree AC commands. The ESP32 exposes a local web server, renders the remote UI directly from firmware, and keeps the last known AC state in flash memory so the interface stays in sync after restart. If normal Wi-Fi is unavailable, the board starts a fallback hotspot so you can still open the remote from a browser.
-
-## Build And Flash
-
-1. Copy [include/wifi_config.example.h](include/wifi_config.example.h) to `include/wifi_config.h`
-2. Add your Wi-Fi SSID and password
-3. Optional: keep `WIFI_USE_STATIC_IP` enabled if you want a fixed LAN address
-4. Build and upload with PlatformIO
+### 1. Flash ESP32
 
 ```bash
-pio run
-pio run --target upload
+cd esp32-gree-remote
+platformio run --target upload --upload-port COM7
+```
+
+### 2. WiFi Provisioning (5-second button press)
+
+- Device creates **UNIVERSAL IR** hotspot (password: `12345678`)
+- Open browser to `http://192.168.4.1`
+- Select your WiFi and enter password
+- Device connects and restarts
+
+### 3. Access Web UI
+
+Visit: **[Universal Gree Remote](https://YOUR_USERNAME.github.io/esp32-gree-remote-web)**
+
+### 4. Control Your AC
+
+Click buttons on the web interface → MQTT message sent to ESP32 → IR command transmitted to AC unit
+
+## Setup Steps
+
+### Step A: Deploy Web UI to GitHub Pages
+
+1. **Fork or create repository**: `esp32-gree-remote-web`
+2. **Copy web files**: Use files from `github-pages-site/`
+3. **Enable GitHub Pages**: Settings → Pages → Deploy from branch
+4. **Access at**: `https://YOUR_USERNAME.github.io/esp32-gree-remote-web`
+
+**See [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) for detailed instructions**
+
+### Step B: Flash ESP32 with MQTT Support
+
+```bash
+platformio run --target upload --upload-port COM7
 pio device monitor
 ```
 
-## Open The Web Remote
+### Step C: Connect to WiFi
 
-On your normal Wi-Fi network, try:
+Press RESET button for 5 seconds:
+- Enters provisioning mode
+- Creates **UNIVERSAL IR** hotspot
+- Navigate to `http://192.168.4.1`
+- Select home WiFi and enter password
 
-- `http://<device-ip>/`
-- `http://gree.local/`
+### Step D: Control via Web UI
 
-If Wi-Fi is not configured or the connection fails, the ESP32 starts its own access point:
+Open your web UI and start controlling!
 
-- SSID: `ESP32-IR-Bridge`
-- Password: `irbridge123`
-- URL: `http://192.168.4.1/`
+## MQTT Configuration
+
+| Setting | Value |
+|---------|-------|
+| Broker | 128.199.20.163 |
+| Port | 1883 |
+| Username | amiuser |
+| Password | password |
+| Command Topic | `remote/command` |
+| Status Topic | `remote/status` |
+
+**See [MQTT_ARCHITECTURE.md](MQTT_ARCHITECTURE.md) for detailed documentation**
+
+## Hardware Requirements
+
+- ESP32 development board
+- IR LED + 2N2222 transistor (transmit)
+- IR receiver module (optional, for debugging)
+- 5V USB power supply
+
+**See [CIRCUIT_DIAGRAM.md](CIRCUIT_DIAGRAM.md) for wiring**
+
+## Supported AC Models
+
+- Gree units using `YAW1F` protocol
+- Tested on common Gree AC units
+- Protocol: Native Gree infrared remote commands
+
+## Files
+
+- **[MQTT_ARCHITECTURE.md](MQTT_ARCHITECTURE.md)** - Complete technical architecture
+- **[GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md)** - Deploying web UI to GitHub Pages
+- **[WIFI_PROVISIONING.md](WIFI_PROVISIONING.md)** - WiFi setup and troubleshooting
+- **[CIRCUIT_DIAGRAM.md](CIRCUIT_DIAGRAM.md)** - Hardware wiring
+- **[USER_MANUAL.md](USER_MANUAL.md)** - Operation guide
+- **[github-pages-site/](github-pages-site/)** - Web UI source code
+
+## Features
+
+### Device Features
+- ✅ WiFi provisioning (5-second button press)
+- ✅ MQTT client for cloud connectivity
+- ✅ IR transmission (GPIO 12)
+- ✅ IR reception/debug (GPIO 15)
+- ✅ Persistent state saving (NVS)
+- ✅ Button press: 10 seconds clears WiFi
+
+### Web UI Features
+- ✅ Realistic remote interface
+- ✅ Real-time AC status display
+- ✅ Mobile responsive
+- ✅ No installation required
+- ✅ Works offline with cached UI
+- ✅ MQTT status indicator
+
+## Web UI Commands
+
+All buttons on the remote interface:
+
+```
+POWER       MODE        FAN
+TEMP UP     SWING V     SWING H
+TEMP DOWN   TURBO       SLEEP
+TIMER       I FEEL      DISPLAY
+WIFI        ECO         LIGHT
+AUTO        COOL        DRY        HEAT
+```
+
+## Serial Monitor Output
+
+```
+ESP32 Universal Gree Remote
+WiFi credentials saved: MyNetwork
+Attempting to connect to saved WiFi: MyNetwork
+Wi-Fi connected: MyNetwork
+Connecting to MQTT broker... Connected!
+MQTT Command received: {"button":"power"}
+Sent IR: GREE Power Toggle
+```
+
+## Troubleshooting
+
+### Device won't connect to MQTT
+- Verify WiFi is connected (check serial monitor)
+- Ping broker: `ping 128.199.20.163`
+- Check MQTT credentials correct
+
+### Web UI shows "Disconnected"
+- Verify ESP32 is powered and WiFi connected
+- Check browser console (F12) for errors
+- Ensure MQTT broker is reachable
+
+### WiFi provisioning won't appear
+- Press reset button for exactly 5 seconds
+- Check serial monitor for "Starting WiFi Provisioning"
+- Try 10-second press to clear, then reprogram
+
+### IR commands not working
+- Ensure IR LED is on GPIO 12
+- Point LED at AC unit
+- Check AC responds to physical remote
+
+**Full troubleshooting guide: See [MQTT_ARCHITECTURE.md](MQTT_ARCHITECTURE.md)**
+
+## Building and Customization
+
+### Add More Button Commands
+
+Edit `src/main.cpp` `isSupportedButton()` and `sendNativeGreeButtonCode()` functions.
+
+### Change MQTT Broker
+
+Edit `src/main.cpp`:
+```cpp
+constexpr char kMqttBrokerHost[] = "your.broker.com";
+constexpr uint16_t kMqttBrokerPort = 1883;
+```
+
+### Customize Web UI
+
+Edit `github-pages-site/index.html`:
+```javascript
+const MQTT_BROKER_HOST = 'your.broker.com';
+const MQTT_USERNAME = 'your_user';
+const MQTT_PASSWORD = 'your_pass';
+```
+
+## Project Structure
+
+```
+esp32-gree-remote/
+├── platformio.ini                    # Build config (MQTT + IR libs)
+├── src/
+│   ├── main.cpp                     # WiFi + MQTT + IR firmware
+│   └── remote_library.cpp           # AC state management
+├── include/
+│   ├── remote_library.h
+│   └── wifi_config.example.h
+├── github-pages-site/                # Web UI (GitHub Pages ready)
+│   ├── index.html                   # Remote interface
+│   ├── README.md                    # Web UI documentation
+│   └── .github/workflows/pages.yml  # Auto-deployment config
+├── MQTT_ARCHITECTURE.md             # Technical details
+├── GITHUB_PAGES_SETUP.md            # Deployment guide
+└── [other documentation files]
+```
+
+## Dependencies
+
+**ESP32 Firmware:**
+- `crankyoldgit/IRremoteESP8266` @ ^2.8.6
+- `knolleary/PubSubClient` @ ^2.8.0
+
+**Web UI:**
+- Paho MQTT JS (CDN)
+- HTML5/CSS3/JavaScript
+
+## License
+
+MIT License - See LICENSE file
+
+## Contributing
+
+Pull requests welcome! Test on real hardware before submitting.
+
+## Support
+
+- **GitHub Issues**: Report bugs or feature requests
+- **Discussions**: Ask questions
+- **Wiki**: Community tips and tricks
+
+## Author
+
+Universal Gree remote with MQTT cloud connectivity for global AC control.
+
+---
+
+**Next Steps:**
+1. Follow [GITHUB_PAGES_SETUP.md](GITHUB_PAGES_SETUP.md) to deploy web UI
+2. Follow [MQTT_ARCHITECTURE.md](MQTT_ARCHITECTURE.md) for detailed setup
+3. See [WIFI_PROVISIONING.md](WIFI_PROVISIONING.md) for WiFi configuration
 
 ## API Endpoints
 
@@ -100,3 +288,5 @@ ESP32 web-based IR remote for Gree air conditioners using the YAW1F protocol, wi
 
 Topics:
 `esp32`, `arduino`, `platformio`, `infrared`, `ir-remote`, `air-conditioner`, `gree`, `gree-ac`, `wifi`, `webserver`, `smart-home`, `irremoteesp8266`
+#   g r e e  
+ 
