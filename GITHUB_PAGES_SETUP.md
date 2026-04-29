@@ -1,4 +1,4 @@
-# GitHub Pages Deployment Guide
+﻿# GitHub Pages Deployment Guide
 
 Complete steps to deploy the Universal Gree Remote web UI to GitHub Pages.
 
@@ -12,7 +12,7 @@ Complete steps to deploy the Universal Gree Remote web UI to GitHub Pages.
 1. **Log in to GitHub**: https://github.com/login
 
 2. **Create new repository**:
-   - Click **+** icon → **New repository**
+   - Click **+** icon â†’ **New repository**
    - **Repository name**: `esp32-gree-remote-web`
    - **Description**: "Universal Gree Air Conditioner Remote Control via MQTT"
    - **Visibility**: Public (required for free GitHub Pages)
@@ -92,7 +92,7 @@ https://YOUR_USERNAME.github.io/esp32-gree-remote-web/
 Check deployment status:
 - Go to **Actions** tab
 - Click on the latest workflow run
-- Verify it shows ✅ status
+- Verify it shows âœ… status
 
 ## Step 7: Update MQTT Configuration
 
@@ -100,10 +100,10 @@ If your MQTT broker details change, edit `index.html`:
 
 ```javascript
 // Line ~85 in index.html
-const MQTT_BROKER_HOST = 'broker.hivemq.com';
-const MQTT_BROKER_PORT = 8001; // WebSocket port for browser
-const MQTT_USERNAME = ''; // No authentication needed
-const MQTT_PASSWORD = ''; // No authentication needed
+const MQTT_BROKER_HOST = '128.199.20.163';
+const MQTT_BROKER_PORT = 8083; // WebSocket port after enabling it on the broker
+const MQTT_USERNAME = ''; // Use username amiuser and password password
+const MQTT_PASSWORD = ''; // Use username amiuser and password password
 ```
 
 Then push changes:
@@ -117,14 +117,14 @@ git push origin main
 
 To use a custom domain (e.g., `remote.example.com`):
 
-1. **Repository Settings → Pages**
+1. **Repository Settings â†’ Pages**
 2. **Custom domain**: Enter your domain
 3. **Update DNS** records for your domain:
-   - **A record** → `185.199.108.153`
-   - **A record** → `185.199.109.153`
-   - **A record** → `185.199.110.153`
-   - **A record** → `185.199.111.153`
-   - OR **CNAME** → `YOUR_USERNAME.github.io`
+   - **A record** â†’ `185.199.108.153`
+   - **A record** â†’ `185.199.109.153`
+   - **A record** â†’ `185.199.110.153`
+   - **A record** â†’ `185.199.111.153`
+   - OR **CNAME** â†’ `YOUR_USERNAME.github.io`
 4. **Enforce HTTPS** (check the box)
 
 ## Troubleshooting
@@ -150,7 +150,7 @@ ls -la index.html
 ### Website shows 404
 
 1. Wait 2-3 minutes after push (GitHub Pages deployment takes time)
-2. Check **Actions** tab - verify deployment shows ✅
+2. Check **Actions** tab - verify deployment shows âœ…
 3. Check repository Settings > Pages to confirm source
 
 ### MQTT not connecting
@@ -158,11 +158,11 @@ ls -la index.html
 1. Check browser console (F12) for errors
 2. Verify MQTT broker is reachable:
    ```bash
-   ping broker.hivemq.com
+   ping 128.199.20.163
    ```
 3. Test MQTT directly:
    ```bash
-   mosquitto_pub -h broker.hivemq.com \
+   mosquitto_pub -h 128.199.20.163 \
      -t test -m "hello"
    ```
 
@@ -190,13 +190,13 @@ After setup, your repo should look like:
 
 ```
 esp32-gree-remote-web/
-├── .github/
-│   └── workflows/
-│       └── pages.yml
-├── index.html
-├── README.md
-├── LICENSE
-└── .gitignore
+â”œâ”€â”€ .github/
+â”‚   â””â”€â”€ workflows/
+â”‚       â””â”€â”€ pages.yml
+â”œâ”€â”€ index.html
+â”œâ”€â”€ README.md
+â”œâ”€â”€ LICENSE
+â””â”€â”€ .gitignore
 ```
 
 ## Next Steps
@@ -218,4 +218,5 @@ For MQTT issues:
 
 ---
 
-**Your web UI is now globally accessible from any device!** 🌍
+**Your web UI is now globally accessible from any device!** ðŸŒ
+

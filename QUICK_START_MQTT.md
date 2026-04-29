@@ -1,29 +1,29 @@
-# 🎯 Quick Reference: MQTT Remote Control Setup
+﻿# ðŸŽ¯ Quick Reference: MQTT Remote Control Setup
 
 Complete summary of changes and quick start guide.
 
 ## What Was Done
 
-### 1. ✅ Removed Web Server from ESP32
+### 1. âœ… Removed Web Server from ESP32
 - Removed embedded HTML/CSS/JavaScript UI (~3KB)
 - Removed `/api/status`, `/api/button/send` endpoints
 - Kept WiFi provisioning mode (still works)
 - Kept IR transmission/reception
 - Added MQTT client for cloud connectivity
 
-### 2. ✅ Created Web UI on GitHub Pages
+### 2. âœ… Created Web UI on GitHub Pages
 - Modern, responsive remote interface
 - Works on any browser (phone, tablet, desktop)
 - Connects to MQTT broker directly
 - No installation needed - just bookmark the URL
 - Updates deploy automatically with git push
 
-### 3. ✅ Added MQTT Architecture
+### 3. âœ… Added MQTT Architecture
 - ESP32 acts as IoT device (not web server)
-- MQTT broker as cloud gateway (broker.hivemq.com:1883 or 8001 for WebSocket)
+- MQTT broker as cloud gateway (128.199.20.163:1883 for ESP32; enable a WebSocket port for GitHub Pages)
 - Browser connects to broker via WebSocket
-- Commands: browser → MQTT → ESP32 → IR → AC
-- Status: AC state → IR capture → MQTT → browser
+- Commands: browser â†’ MQTT â†’ ESP32 â†’ IR â†’ AC
+- Status: AC state â†’ IR capture â†’ MQTT â†’ browser
 
 ## Files Changed
 
@@ -68,14 +68,17 @@ platformio run --target upload --upload-port COM7
 
 | Setting | Value |
 |---------|-------|
-| Broker | broker.hivemq.com |
+| Broker | 128.199.20.163 |
 | Port | 1883 |
-| Username | (none - public broker) |
+| Username | amiuser |
 | Password | password |
 
 ### Topics
-- **Command**: `remote/command` - Browser sends commands here
-- **Status**: `remote/status` - ESP32 publishes state here
+- **Command**: `ir` - Browser sends commands here
+- **Status**: `ir/status` - ESP32 publishes state here
+
+GitHub Pages needs a broker WebSocket listener. The ESP32 can use `1883`, but
+the browser cannot use raw TCP MQTT directly.
 
 ### Command Format
 ```json
@@ -121,8 +124,8 @@ Publishing status...
 
 ### Test Commands (via MQTT CLI)
 ```bash
-mosquitto_pub -h broker.hivemq.com \
-  -t remote/command -m '{"button":"power"}'
+mosquitto_pub -h 128.199.20.163 \
+  -t ir -m '{"button":"power"}'
 ```
 
 ## Troubleshooting
@@ -136,7 +139,7 @@ mosquitto_pub -h broker.hivemq.com \
 **Solution**: Check WiFi connected first
 1. Verify WiFi SSID appears in provisioning page
 2. Check serial monitor for WiFi connection status
-3. Ping broker: `ping broker.hivemq.com`
+3. Ping broker: `ping 128.199.20.163`
 
 ### Issue: IR commands not working
 **Solution**: Verify IR hardware
@@ -155,23 +158,23 @@ mosquitto_pub -h broker.hivemq.com \
 ```
                  WiFi Network
                       |
-    ┌─────────────────┴─────────────────┐
+    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
     |                                   |
 ESP32 Device                    WiFi Provisioning
 (IR Control)                    (Setup Interface)
     |                                   |
-    └─────────────────┬─────────────────┘
+    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
                       |
                    WiFi
                       |
-          ┌───────────┴───────────┐
+          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
           |                       |
        Home Router          MQTT Broker
-                          (broker.hivemq.com)
+                          (128.199.20.163)
                             |        |
                       WebSocket  TCP (1883)
                             |        |
-                    ┌───────┴────────┘
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”˜
                     |
               Web UI (GitHub Pages)
                 (Browser)
@@ -180,18 +183,18 @@ ESP32 Device                    WiFi Provisioning
 ## Before & After
 
 ### Before
-- ❌ Local network only
-- ❌ Access via `http://<device-ip>/`
-- ❌ Embedded web server on ESP32
-- ❌ Cannot update UI without reflashing
-- ❌ Limited to devices on same WiFi
+- âŒ Local network only
+- âŒ Access via `http://<device-ip>/`
+- âŒ Embedded web server on ESP32
+- âŒ Cannot update UI without reflashing
+- âŒ Limited to devices on same WiFi
 
 ### After
-- ✅ Global access (anywhere)
-- ✅ Access via HTTPS GitHub Pages URL
-- ✅ Lightweight device (MQTT only)
-- ✅ Update UI with git push
-- ✅ Control from any network
+- âœ… Global access (anywhere)
+- âœ… Access via HTTPS GitHub Pages URL
+- âœ… Lightweight device (MQTT only)
+- âœ… Update UI with git push
+- âœ… Control from any network
 
 ## Next Steps
 
@@ -228,14 +231,14 @@ ESP32 Device                    WiFi Provisioning
 
 ## Key Features
 
-- 🌍 **Global Access**: Control AC from anywhere
-- 📱 **Mobile Friendly**: Works on phone, tablet, desktop
-- 🔐 **Secure**: MQTT with credentials
-- ⚡ **Lightweight**: ESP32 uses less resources
-- 🔄 **Real-time**: MQTT for instant updates
-- 📊 **Expandable**: Use same broker for other devices
-- 🎨 **Modern UI**: Responsive, attractive interface
-- 🚀 **Easy Updates**: Deploy UI by git push
+- ðŸŒ **Global Access**: Control AC from anywhere
+- ðŸ“± **Mobile Friendly**: Works on phone, tablet, desktop
+- ðŸ” **Secure**: MQTT with credentials
+- âš¡ **Lightweight**: ESP32 uses less resources
+- ðŸ”„ **Real-time**: MQTT for instant updates
+- ðŸ“Š **Expandable**: Use same broker for other devices
+- ðŸŽ¨ **Modern UI**: Responsive, attractive interface
+- ðŸš€ **Easy Updates**: Deploy UI by git push
 
 ## Support Resources
 
@@ -248,4 +251,5 @@ ESP32 Device                    WiFi Provisioning
 
 ---
 
-**You're all set! 🚀 Start with Step 1 above.**
+**You're all set! ðŸš€ Start with Step 1 above.**
+

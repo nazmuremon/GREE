@@ -10,7 +10,7 @@ A DIY WiFi-enabled remote for Gree air conditioners using MQTT for universal clo
     ┌─────────────────────────┼─────────────────────────┐
     |                         |                         |
 ESP32 Device          WiFi Provisioning AP      MQTT Broker
-(IR Control)          (Setup Interface)       (broker.hivemq.com)
+(IR Control)          (Setup Interface)       (128.199.20.163)
     |                         |                    |
     |                   Press 5s button ◄──────────┤
     |                                              |
@@ -64,14 +64,17 @@ Visit: **[Universal Gree Remote Web Control](https://YourUsername.github.io/esp3
 
 | Setting | Value |
 |---------|-------|
-| Broker | broker.hivemq.com |
-| Port | 1883 (ESP32) / 8001 (Web UI WebSocket) |
-| Username | (not required - public broker) |
-| Password | (not required - public broker) |
+| Broker | 128.199.20.163 |
+| Port | 1883 (ESP32 TCP MQTT) |
+| Username | amiuser |
+| Password | password |
+
+Browser note: GitHub Pages cannot connect to raw MQTT TCP port `1883`. The
+broker must expose MQTT over WebSocket before the hosted web UI can connect.
 
 ### Topics
 
-#### `remote/command` (Subscribe - ESP32 receives)
+#### `ir` (Subscribe - ESP32 receives)
 JSON format:
 ```json
 {"button":"power"}
@@ -86,7 +89,7 @@ xfan, light, wifi, ifeel, display,
 energy
 ```
 
-#### `remote/status` (Publish - ESP32 sends)
+#### `ir/status` (Publish - ESP32 sends)
 JSON format:
 ```json
 {
@@ -148,12 +151,12 @@ MQTT Command received: {"button":"power"}
 
 ### MQTT not connecting
 1. Verify WiFi is connected (check serial monitor)
-2. Ping broker: `ping broker.hivemq.com`
-3. No credentials needed (public broker)
+2. Ping broker: `ping 128.199.20.163`
+3. Use username amiuser and password password (public broker)
 4. Try manual MQTT client:
    ```bash
-   mosquitto_pub -h broker.hivemq.com \
-     -t remote/command -m '{"button":"power"}'
+   mosquitto_pub -h 128.199.20.163 \
+     -t ir -m '{"button":"power"}'
    ```
 
 ### IR commands not working

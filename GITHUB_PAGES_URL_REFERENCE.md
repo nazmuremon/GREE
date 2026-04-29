@@ -1,6 +1,6 @@
-# 🎯 Your GitHub Pages Web UI - Reference Card
+﻿# ðŸŽ¯ Your GitHub Pages Web UI - Reference Card
 
-## 📌 Key Information
+## ðŸ“Œ Key Information
 
 ### Your Remote Control URL
 After deploying to GitHub Pages, your remote will be at:
@@ -16,7 +16,7 @@ https://john-doe.github.io/esp32-gree-remote-web
 
 ---
 
-## 🔗 Key URLs
+## ðŸ”— Key URLs
 
 | Resource | URL |
 |----------|-----|
@@ -27,7 +27,7 @@ https://john-doe.github.io/esp32-gree-remote-web
 
 ---
 
-## 📋 GitHub Repository Details
+## ðŸ“‹ GitHub Repository Details
 
 **Repository Name**: `esp32-gree-remote-web`
 **Visibility**: Public
@@ -36,7 +36,7 @@ https://john-doe.github.io/esp32-gree-remote-web
 
 ---
 
-## ⚙️ ESP32 Connection Details
+## âš™ï¸ ESP32 Connection Details
 
 ### WiFi Provisioning
 ```
@@ -48,17 +48,17 @@ Setup URL:             http://192.168.4.1
 
 ### MQTT Configuration
 ```
-Broker Host:    broker.hivemq.com
-Broker Port:    1883 (TCP) or 8001 (WebSocket)
-Username:       (not required)
-Password:       (not required)
-Command Topic:  remote/command
-Status Topic:   remote/status
+Broker Host:    128.199.20.163
+Broker Port:    1883 (ESP32 TCP); browser needs a WebSocket port
+Username:       amiuser
+Password:       password
+Command Topic:  ir
+Status Topic:   ir/status
 ```
 
 ---
 
-## 📱 Access Your Remote
+## ðŸ“± Access Your Remote
 
 ### From Desktop Browser
 1. Open: `https://YOUR_USERNAME.github.io/esp32-gree-remote-web`
@@ -78,13 +78,13 @@ Status Topic:   remote/status
 
 ---
 
-## 🚀 Quick Deployment (Copy & Paste)
+## ðŸš€ Quick Deployment (Copy & Paste)
 
 ### Step 1: Create Repository on GitHub
 ```
 Name: esp32-gree-remote-web
 Visibility: Public
-✓ Add a README file
+âœ“ Add a README file
 ```
 
 ### Step 2: Clone and Add Files
@@ -98,7 +98,7 @@ git push origin main
 ```
 
 ### Step 3: Enable GitHub Pages
-- Go to: Settings → Pages
+- Go to: Settings â†’ Pages
 - Branch: main
 - Folder: / (root)
 - Click Save
@@ -111,7 +111,7 @@ https://YOUR_USERNAME.github.io/esp32-gree-remote-web
 
 ---
 
-## 📲 Share with Others
+## ðŸ“² Share with Others
 
 Share this link with anyone who wants to control your AC:
 
@@ -127,7 +127,7 @@ They just need:
 
 ---
 
-## 🔧 Update Your Web UI
+## ðŸ”§ Update Your Web UI
 
 To update the web UI later:
 
@@ -145,7 +145,7 @@ git push origin main
 
 ---
 
-## 📊 Status Check
+## ðŸ“Š Status Check
 
 ### Is Everything Working?
 
@@ -160,7 +160,7 @@ Open your web UI and check:
 
 ---
 
-## 🆘 Troubleshooting
+## ðŸ†˜ Troubleshooting
 
 ### Web UI won't load
 - Check URL spelling: `https://YOUR_USERNAME.github.io/esp32-gree-remote-web`
@@ -181,7 +181,7 @@ Open your web UI and check:
 
 ---
 
-## 📚 Documentation Quick Links
+## ðŸ“š Documentation Quick Links
 
 | Need Help With | Document |
 |----------------|----------|
@@ -194,7 +194,7 @@ Open your web UI and check:
 
 ---
 
-## 🎮 Supported Buttons
+## ðŸŽ® Supported Buttons
 
 All AC controls:
 - **Power**: On/Off
@@ -207,7 +207,7 @@ All AC controls:
 
 ---
 
-## ⏰ Important: WiFi Provisioning
+## â° Important: WiFi Provisioning
 
 **Only accessible during provisioning mode:**
 
@@ -219,49 +219,49 @@ All AC controls:
 
 ---
 
-## 🔒 Security Notes
+## ðŸ”’ Security Notes
 
-- ✅ MQTT: Public HiveMQ broker (no credentials needed)
-- ✅ Provisioning hotspot password: `12345678`
-- ✅ WiFi credentials stored securely in ESP32 NVS
-- ✅ MQTT uses standard TCP protocol
-- ⚠️ For public access, consider using VPN or firewall rules
-
----
-
-## 📞 One-Page Checklist
-
-```
-□ Create GitHub repository (esp32-gree-remote-web)
-□ Clone repository locally
-□ Copy files from github-pages-site/
-□ Commit and push to GitHub
-□ Enable GitHub Pages (Settings → Pages)
-□ Wait for deployment to complete
-□ Note your web UI URL
-□ Flash ESP32 firmware
-□ WiFi provisioning (5-sec button)
-□ Test web UI access
-□ Click buttons and verify AC responds
-□ Save bookmark: https://YOUR_USERNAME.github.io/esp32-gree-remote-web
-□ Share URL with others if desired
-```
+- âœ… MQTT: Private MQTT broker (no credentials needed)
+- âœ… Provisioning hotspot password: `12345678`
+- âœ… WiFi credentials stored securely in ESP32 NVS
+- âœ… MQTT uses standard TCP protocol
+- âš ï¸ For public access, consider using VPN or firewall rules
 
 ---
 
-## 🎉 Success!
+## ðŸ“ž One-Page Checklist
+
+```
+â–¡ Create GitHub repository (esp32-gree-remote-web)
+â–¡ Clone repository locally
+â–¡ Copy files from github-pages-site/
+â–¡ Commit and push to GitHub
+â–¡ Enable GitHub Pages (Settings â†’ Pages)
+â–¡ Wait for deployment to complete
+â–¡ Note your web UI URL
+â–¡ Flash ESP32 firmware
+â–¡ WiFi provisioning (5-sec button)
+â–¡ Test web UI access
+â–¡ Click buttons and verify AC responds
+â–¡ Save bookmark: https://YOUR_USERNAME.github.io/esp32-gree-remote-web
+â–¡ Share URL with others if desired
+```
+
+---
+
+## ðŸŽ‰ Success!
 
 Once everything works:
-- ✅ You have global AC control
-- ✅ Your web UI is live
-- ✅ ESP32 is connected to MQTT
-- ✅ Ready for daily use
+- âœ… You have global AC control
+- âœ… Your web UI is live
+- âœ… ESP32 is connected to MQTT
+- âœ… Ready for daily use
 
-**Enjoy your universal remote! 🚀**
+**Enjoy your universal remote! ðŸš€**
 
 ---
 
-## 📝 Your Setup Notes
+## ðŸ“ Your Setup Notes
 
 ```
 GitHub Username:        [                        ]
@@ -271,8 +271,8 @@ ESP32 Port:             [                        ]
 WiFi SSID:              [                        ]
 WiFi Password:          [                        ]
 Backup URL:             http://192.168.4.1 (provisioning)
-MQTT Broker:            broker.hivemq.com
-MQTT Port:              1883 (ESP32) / 8001 (Web UI)
+MQTT Broker:            128.199.20.163
+MQTT Port:              1883 (ESP32 TCP); Web UI needs WebSocket
 ```
 
 Print this page or save as PDF for future reference!
@@ -282,3 +282,4 @@ Print this page or save as PDF for future reference!
 **Last Updated**: April 28, 2026  
 **Version**: MQTT Architecture  
 **Status**: Production Ready
+

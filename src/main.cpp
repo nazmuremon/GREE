@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <ESPmDNS.h>
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WebServer.h>
@@ -59,15 +58,12 @@ constexpr uint32_t kWifiConnectTimeoutMs = 15000;
 constexpr uint16_t kCaptureBufferSize = 1024;
 constexpr uint8_t kCaptureTimeoutMs = 50;
 // MQTT Configuration
-// Device (ESP32): Uses TCP MQTT on port 1883 (standard)
-// Browser (Web UI): Uses WSS (WebSocket Secure) on port 8884
-// Both connect to the same public HiveMQ broker with no authentication
-constexpr char kMqttBrokerHost[] = "broker.hivemq.com";
-constexpr uint16_t kMqttBrokerPort = 1883;  // TCP MQTT port (not WebSocket)
-constexpr char kMqttUsername[] = "";  // No auth needed for HiveMQ public broker
-constexpr char kMqttPassword[] = "";  // No auth needed for HiveMQ public broker
-constexpr char kMqttTopicCommand[] = "remote/command";  // Browser sends IR commands here
-constexpr char kMqttTopicStatus[] = "remote/status";    // Device publishes AC state here
+constexpr char kMqttBrokerHost[] = "128.199.20.163";
+constexpr uint16_t kMqttBrokerPort = 1883;
+constexpr char kMqttUsername[] = "amiuser";
+constexpr char kMqttPassword[] = "password";
+constexpr char kMqttTopicCommand[] = "ir";
+constexpr char kMqttTopicStatus[] = "ir/status";
 // WiFi provisioning AP credentials (used when no saved WiFi or manual provisioning)
 constexpr char kProvisioningApSsid[] = "UNIVERSAL IR";
 constexpr char kProvisioningApPassword[] = "12345678";
@@ -196,24 +192,25 @@ void onMqttMessage(char* topic, byte* payload, unsigned int length) {
   // Parse MQTT command
   if (strcmp(topic, kMqttTopicCommand) != 0) return;
   
-  // Parse JSON command
   String jsonStr = "";
   for (unsigned int i = 0; i < length; i++) {
     jsonStr += (char)payload[i];
   }
+  jsonStr.trim();
   
   Serial.print(F("MQTT Command received: "));
   Serial.println(jsonStr);
   
   // Simple button parsing - expect {"button":"<button_id>"}
   if (jsonStr.indexOf("\"button\"") >= 0) {
-    // Extract button ID (simple parsing)
     int start = jsonStr.indexOf("\":\"") + 3;
     int end = jsonStr.indexOf("\"", start);
     if (start > 0 && end > start) {
       String buttonId = jsonStr.substring(start, end);
       handleButtonCommand(buttonId);
     }
+  } else if (jsonStr.length() > 0) {
+    handleButtonCommand(jsonStr);
   }
 }
 
@@ -1171,55 +1168,12 @@ String sendNativeGreeButtonCode(const String& buttonId, uint16_t count) {
 }
 
 String getRootPage() {
-  return R"HTML(<!doctype html>
-<html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ESP32 Universal Gree Remote</title>
-<style>
-:root{--bg:#dee8ec;--bg2:#f7fafc;--remote:#f3f2ef;--remote-edge:#dad7d1;--ink:#1d2d39;--muted:#64717a;--lcd:#e6efdc;--lcd2:#f3f7ed;--lcd-ink:#4b5651;--silver1:#fcfcfb;--silver2:#d7d9d7;--silver3:#b8bab8;--orange1:#efb46c;--orange2:#d88833;--orange3:#be6c22}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Segoe UI",Tahoma,sans-serif;background:radial-gradient(circle at top left,rgba(26,82,72,.12),transparent 25%),linear-gradient(180deg,var(--bg),var(--bg2));color:var(--ink)}button{font:inherit}
-.stage{width:min(100%,430px);padding:14px}.remote{position:relative;padding:14px 22px 18px;border-radius:34px;background:linear-gradient(180deg,#fff,var(--remote) 38%,var(--remote-edge));box-shadow:inset 0 2px 1px rgba(255,255,255,.95),0 28px 40px rgba(20,35,48,.18)}.remote:before,.remote:after{content:"";position:absolute;top:10px;bottom:10px;width:12px;border-radius:18px;background:linear-gradient(180deg,#e8ecee,#c8ced2)}.remote:before{left:6px}.remote:after{right:6px}
-.screen-shell{margin:0 auto 16px;width:100%;padding:14px 12px 12px;border-radius:12px;background:linear-gradient(180deg,#0f1418,#1a2126 18%,#10161b);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}.screen{position:relative;min-height:220px;padding:12px 12px 16px;border-radius:3px;background:linear-gradient(180deg,var(--lcd2),var(--lcd));color:var(--lcd-ink);overflow:hidden}.screen:before,.screen:after{content:"";position:absolute;top:0;bottom:0;width:1px;background:rgba(75,86,81,.22)}.screen:before{left:36px}.screen:after{right:36px}
-.lcd-top,.lcd-mid{position:relative;z-index:1}.lcd-top{display:flex;justify-content:space-between;font-size:.9rem;font-weight:700;letter-spacing:.08em}.lcd-icons{display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px;font-size:1rem}.lcd-temp{display:flex;justify-content:center;align-items:flex-start;gap:4px;margin-top:6px;font-family:"Courier New",monospace;color:#5a6460}.lcd-temp strong{font-size:5.4rem;line-height:.9;font-weight:700}.lcd-temp span{font-size:2rem;font-weight:700;padding-top:16px}.lcd-mid{text-align:center;margin-top:4px;font-size:.96rem;font-weight:700}.lcd-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:1rem;font-weight:700}.lcd-flag-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;font-size:.92rem}.lcd-note{margin-top:8px;font-size:.78rem;line-height:1.3;opacity:.82;text-align:center}.lcd-logo{position:absolute;right:12px;bottom:10px;font-size:.78rem;font-weight:800;letter-spacing:.24em;opacity:.18}
-.button-grid{display:grid;gap:10px}.button-row-2{grid-template-columns:repeat(2,minmax(0,1fr))}.button-row-3{grid-template-columns:repeat(3,minmax(0,1fr))}.button-row-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-.btn{min-height:38px;padding:0 8px;border:1px solid rgba(95,101,106,.55);border-radius:999px;background:linear-gradient(180deg,var(--silver1),var(--silver2) 58%,var(--silver3));color:#33424c;box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 2px 3px rgba(0,0,0,.12);font-size:.76rem;font-weight:800;letter-spacing:.03em;cursor:pointer}.btn:active{transform:translateY(1px)}.btn.active{background:linear-gradient(180deg,#f5d6b0,var(--orange1) 58%,var(--orange2));border-color:rgba(163,97,29,.7);color:#5a2a00}.btn.soft{font-size:.72rem}
-.power-row{display:grid;grid-template-columns:1fr 74px 1fr;gap:10px;align-items:center;margin:12px 0 10px}.power-btn{width:74px;height:74px;border:0;border-radius:999px;background:radial-gradient(circle at 35% 30%,#ffd8a3,var(--orange1) 28%,var(--orange2) 62%,var(--orange3));color:#5e2e05;font-weight:900;letter-spacing:.05em;box-shadow:inset 0 2px 4px rgba(255,255,255,.6),0 10px 18px rgba(190,108,34,.28);cursor:pointer}.power-btn.on{box-shadow:0 0 0 5px rgba(239,180,108,.2),inset 0 2px 4px rgba(255,255,255,.6),0 10px 18px rgba(190,108,34,.28)}.rule{height:3px;border-radius:99px;background:linear-gradient(90deg,transparent,#d3d5d3 22%,#b5b7b5 50%,#d3d5d3 78%,transparent);margin:6px 22px 8px}
-.debug{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(0,0,0,.06)}.debug summary{cursor:pointer;font-weight:700}.debug-grid{display:grid;gap:6px;margin-top:8px;font-size:.8rem}.debug-grid code{display:block;padding:7px 8px;border-radius:8px;background:#10161b;color:#d7f0dc;overflow:auto}
-.footer{margin-top:14px;padding:12px 0 10px;border-radius:0 0 14px 14px;background:linear-gradient(180deg,#151b20,#0d1115);color:#eef3f6;text-align:center}.footer strong{display:block;font-size:1.55rem;letter-spacing:.08em}.footer span{display:block;margin-top:6px;font-size:.76rem;color:#c6d0d8;min-height:18px}.chip{opacity:.55}.chip.on{opacity:1}
-@media(max-width:380px){.stage{padding:8px}.remote{padding:12px 18px 16px}.power-row{grid-template-columns:1fr 64px 1fr}.power-btn{width:64px;height:64px}.btn{font-size:.7rem}.screen{min-height:205px}.lcd-temp strong{font-size:4.8rem}}
-</style></head><body><main class="stage"><div class="remote">
-<div class="screen-shell"><div class="screen">
-<div class="lcd-top"><span id="lcdFanTop">FAN AUTO</span><span id="lcdPowerTop">OFF</span></div>
-<div class="lcd-icons"><span id="lcdLeftIcon">AIR</span><span id="lcdSwingTop">AUTO</span><span id="lcdRightIcon">WIFI</span></div>
-<div class="lcd-temp"><strong id="lcdDigits">--</strong><span id="lcdUnit">C</span></div>
-<div id="lcdMode" class="lcd-mid">AUTO</div>
-<div class="lcd-row"><span id="lcdTimer">TIMER OFF</span><span id="lcdDisplaySource">SET TEMP</span></div>
-<div class="lcd-flag-row"><span id="flagSleep" class="chip">SLEEP</span><span id="flagTurbo" class="chip">TURBO</span><span id="flagEco" class="chip">ECO</span><span id="flagIFeel" class="chip">I FEEL</span></div>
-<div class="lcd-flag-row"><span id="flagXFan" class="chip">X-FAN</span><span id="flagLight" class="chip">LIGHT</span><span id="flagWifi" class="chip">WIFI</span><span id="flagDisplay" class="chip">DISPLAY</span></div>
-<div id="lcdNote" class="lcd-note">Waiting for remote state...</div><div class="lcd-logo">NAZMUR</div></div></div>
-<div class="button-grid button-row-2"><button class="btn" onclick="sendButton('mode')">MODE</button><button class="btn" onclick="sendButton('fan')">FAN</button></div>
-<div class="rule"></div>
-<div class="power-row"><button class="btn soft" onclick="sendButton('swing')">SWING V</button><button id="powerBtn" class="power-btn" onclick="sendButton('power')">POWER</button><button class="btn soft" onclick="sendButton('temp_up')">TEMP UP</button></div>
-<div class="button-grid button-row-3"><button class="btn soft" onclick="sendButton('swing_h')">SWING H</button><button id="btnTurbo" class="btn" onclick="sendButton('turbo')">TURBO</button><button class="btn soft" onclick="sendButton('temp_down')">TEMP DN</button></div>
-<div class="button-grid button-row-2" style="margin-top:10px"><button id="btnSleep" class="btn" onclick="sendButton('sleep')">SLEEP</button><button id="btnIFeel" class="btn" onclick="sendButton('ifeel')">I FEEL</button></div>
-<div class="button-grid button-row-2" style="margin-top:10px"><button class="btn" onclick="sendButton('timer')">TIMER</button><button id="btnDisplay" class="btn" onclick="sendButton('display')">DISPLAY</button></div>
-<div class="button-grid button-row-3" style="margin-top:10px"><button id="btnWifi" class="btn" onclick="sendButton('wifi')">WIFI</button><button id="btnEco" class="btn" onclick="sendButton('energy')">ECO</button><button id="btnLight" class="btn" onclick="sendButton('light')">LIGHT</button></div>
-<div class="button-grid button-row-4" style="margin-top:10px"><button id="modeAuto" class="btn soft" onclick="sendButton('auto')">AUTO</button><button id="modeCool" class="btn soft" onclick="sendButton('cool')">COOL</button><button id="modeDry" class="btn soft" onclick="sendButton('dry')">DRY</button><button id="modeHeat" class="btn soft" onclick="sendButton('heat')">HEAT</button></div>
-<details class="debug"><summary>IR Debug Reader</summary><div class="debug-grid"><div>Protocol: <span id="dbgProtocol">-</span></div><div>Bits: <span id="dbgBits">-</span></div><div>Raw Length: <span id="dbgRaw">-</span></div><code id="dbgHex">No capture yet</code><div id="dbgMsg">Waiting for remote value...</div></div></details>
-<div class="footer"><strong>GREE</strong><span id="msg">Connecting to the remote...</span></div></div></main>
-<script>
-const UiState={BOOT:"boot",SYNC:"sync",READY:"ready",ERROR:"error"};const app={state:UiState.BOOT,status:null,busy:false,timer:null,redirected:false};const $=id=>document.getElementById(id);
-function setMessage(text,isError=false){const n=$("msg");n.textContent=text;n.style.color=isError?"#ffd3c2":"#c6d0d8"}function transition(nextState,message=""){app.state=nextState;if(message)setMessage(message,nextState===UiState.ERROR)}function scheduleSync(){clearTimeout(app.timer);app.timer=setTimeout(syncStatus,document.hidden?30000:12000)}
-function setChip(id,active){$(id).className=active?"chip on":"chip"}function setActive(id,active){$(id).classList.toggle("active",Boolean(active))}
-function updateButtons(g){$("powerBtn").classList.toggle("on",Boolean(g&&g.power));setActive("btnTurbo",g&&g.turbo);setActive("btnSleep",g&&g.sleep);setActive("btnIFeel",g&&g.ifeel);setActive("btnDisplay",g&&g.display_source!=="off");setActive("btnWifi",g&&g.wifi);setActive("btnEco",g&&g.eco);setActive("btnLight",g&&g.light);setActive("modeAuto",g&&g.mode==="auto");setActive("modeCool",g&&g.mode==="cool");setActive("modeDry",g&&g.mode==="dry");setActive("modeHeat",g&&g.mode==="heat")}
-function maybeRedirectToBookmark(s){if(!s||!s.public_url||app.redirected)return;if(location.origin===s.public_url)return;app.redirected=true;location.replace(s.public_url+"/")}
-function renderDebug(d){$("dbgProtocol").textContent=d&&d.available?d.protocol:"-";$("dbgBits").textContent=d&&d.available?d.bits:"-";$("dbgRaw").textContent=d&&d.available?d.raw_length:"-";$("dbgHex").textContent=d&&d.available?d.hex:"No capture yet";$("dbgMsg").textContent=d?d.message:"Waiting for remote value..."}
-function renderRemote(){const g=app.status&&app.status.gree_state?app.status.gree_state:null;const d=app.status&&app.status.debug_ir?app.status.debug_ir:null;$("lcdFanTop").textContent=g?`FAN ${g.fan_label.toUpperCase()}`:"FAN AUTO";$("lcdPowerTop").textContent=g&&g.power?"OPER":"OFF";$("lcdLeftIcon").textContent=g?g.swing_vertical_label.toUpperCase():"AIR";$("lcdSwingTop").textContent=g?g.mode_label.toUpperCase():"AUTO";$("lcdRightIcon").textContent=g&&g.wifi?"WIFI":"";$("lcdDigits").textContent=g?g.display_value:"--";$("lcdUnit").textContent=g&&g.display_value!=="--"?"C":"";$("lcdMode").textContent=g?g.mode_label.toUpperCase():"AUTO";$("lcdTimer").textContent=g?`TIMER ${g.timer_label.toUpperCase()}`:"TIMER OFF";$("lcdDisplaySource").textContent=g?g.display_source_label.toUpperCase():"SET TEMP";$("lcdNote").textContent=g?g.display_note:"Waiting for remote state...";setChip("flagSleep",Boolean(g&&g.sleep));setChip("flagTurbo",Boolean(g&&g.turbo));setChip("flagEco",Boolean(g&&g.eco));setChip("flagIFeel",Boolean(g&&g.ifeel));setChip("flagXFan",Boolean(g&&g.xfan));setChip("flagLight",Boolean(g&&g.light));setChip("flagWifi",Boolean(g&&g.wifi));setChip("flagDisplay",Boolean(g&&g.display_source!=="off"));updateButtons(g);renderDebug(d)}
-async function requestJson(url){const r=await fetch(url,{cache:"no-store"});const b=await r.json();if(!r.ok)throw new Error(b.message||"Request failed");return b}
-async function syncStatus(){if(app.busy)return;app.busy=true;transition(UiState.SYNC);try{app.status=await requestJson("/api/status");maybeRedirectToBookmark(app.status);renderRemote();transition(UiState.READY,app.status.last_event||"Ready")}catch(e){transition(UiState.ERROR,e.message||"Could not load the remote.")}finally{app.busy=false;scheduleSync()}}
-async function sendButton(buttonId){if(app.busy)return;app.busy=true;transition(UiState.SYNC);try{const r=await requestJson(`/api/button/send?buttonId=${encodeURIComponent(buttonId)}&count=1`);if(r.status)app.status=r.status;renderRemote();transition(UiState.READY,r.message||"Done")}catch(e){transition(UiState.ERROR,e.message||"Request failed")}finally{app.busy=false;scheduleSync()}}
-document.addEventListener("visibilitychange",scheduleSync);syncStatus();
-</script></body></html>)HTML";
+  return F("<!doctype html><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+           "<title>ESP32 Gree Remote</title><body style=\"font-family:sans-serif\">"
+           "<h1>ESP32 Gree Remote</h1>"
+           "<p>Device control is handled by MQTT topic <code>ir</code>.</p>"
+           "<p>Use the GitHub Pages remote UI after provisioning WiFi.</p>"
+           "</body>");
 }
 
 void sendJson(int statusCode, const String& payload) {
@@ -1293,13 +1247,11 @@ void handleNotFoundRequest() {
 void printHelp() {
   Serial.println();
   Serial.println(F("ESP32 Universal Gree Remote"));
-  Serial.println(F("Routes:"));
-  Serial.println(F("  /"));
-  Serial.println(F("  /api/status"));
-  Serial.println(F("  /api/debug/capture"));
-  Serial.println(F("  /api/read-ir"));
-  Serial.println(F("  /api/button/send?buttonId=power"));
-  Serial.println(F("  /api/remote/clear"));
+  Serial.println(F("Control: MQTT topic ir"));
+  Serial.print(F("Broker: "));
+  Serial.print(kMqttBrokerHost);
+  Serial.print(F(":"));
+  Serial.println(kMqttBrokerPort);
   Serial.println(F("Serial commands: status, help, reset"));
   Serial.println(F("Config: WIFI_USE_STATIC_IP and WIFI_PUBLIC_BASE_URL"));
   Serial.print(F("Debug IR reader: "));
@@ -1333,6 +1285,16 @@ void printStatus() {
   Serial.println(preferredBaseUrl);
   Serial.print(F("  mDNS active: "));
   Serial.println(mdnsActive ? F("yes") : F("no"));
+  Serial.print(F("  MQTT broker: "));
+  Serial.print(kMqttBrokerHost);
+  Serial.print(F(":"));
+  Serial.println(kMqttBrokerPort);
+  Serial.print(F("  MQTT command topic: "));
+  Serial.println(kMqttTopicCommand);
+  Serial.print(F("  MQTT status topic: "));
+  Serial.println(kMqttTopicStatus);
+  Serial.print(F("  MQTT connected: "));
+  Serial.println(mqttConnected ? F("yes") : F("no"));
   Serial.print(F("  Last state: "));
   Serial.println(lastNativeAcSummary);
   if (kEnableDebugIrReader) {
@@ -1482,10 +1444,7 @@ void startProvisioning() {
   lastEventMessage = "WiFi Provisioning Mode Active";
   
   // Stop mDNS if running
-  if (mdnsActive) {
-    MDNS.end();
-    mdnsActive = false;
-  }
+  mdnsActive = false;
   
   // Update web server routes for provisioning
   resetWebServer();
@@ -1533,28 +1492,11 @@ void handleResetButton() {
 }
 
 void startWebServer() {
-  if (isProvisioningMode) return;
-  ensureWebServer();
-  server->on("/", HTTP_GET, handleRootRequest);
-  server->on("/api/status", HTTP_GET, handleStatusRequest);
-  server->on("/api/debug/capture", HTTP_GET, handleDebugCaptureRequest);
-  server->on("/api/read-ir", HTTP_GET, handleDebugCaptureRequest);
-  server->on("/api/button/send", HTTP_GET, handleButtonSendRequest);
-  server->on("/api/remote/clear", HTTP_GET, handleRemoteResetRequest);
-  server->onNotFound(handleNotFoundRequest);
-  server->begin();
+  if (!isProvisioningMode) return;
 }
 
 void startMdnsIfPossible() {
   mdnsActive = false;
-  if (WiFi.status() != WL_CONNECTED) {
-    updatePreferredBaseUrl();
-    return;
-  }
-
-  if (MDNS.begin(kDeviceHostname)) {
-    mdnsActive = true;
-  }
   updatePreferredBaseUrl();
 }
 
@@ -1666,9 +1608,7 @@ void setup() {
 
   connectToWifi();
   
-  if (!isProvisioningMode) {
-    startMdnsIfPossible();
-  }
+  startMdnsIfPossible();
   
   startWebServer();
   printHelp();
