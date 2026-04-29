@@ -1,4 +1,4 @@
-# ESP32 Universal Gree Remote
+﻿# ESP32 Universal Gree Remote
 
 This repository is split so the ESP32 flash project is separate from
 documentation and web files.
@@ -6,7 +6,7 @@ documentation and web files.
 ## Folder Layout
 
 - `esp-firmware/` - the only PlatformIO project to build and flash to ESP32
-- `web/` - standalone browser remote UI
+- `web/` - standalone browser remote UI source`n- `index.html` - GitHub Pages entry point copied from `web/index.html`
 - `docs/` - documentation, guides, diagrams, and reference pages
 - `github-pages-site/` - separate GitHub Pages checkout/mirror
 
@@ -51,4 +51,5 @@ const MQTT_TOPIC_STATUS = 'ir/status';
 
 The broker must expose a TLS WebSocket listener such as
 `wss://128.199.20.163:8084/` before the hosted page can connect.
+
 

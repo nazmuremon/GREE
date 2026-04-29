@@ -1,0 +1,305 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Universal Gree Remote - MQTT Web Control</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='50' font-size='70' text-anchor='middle' dy='.3em' fill='%23d88833'>G</text></svg>">
+<style>
+:root{--bg:#dee8ec;--bg2:#f7fafc;--remote:#f3f2ef;--remote-edge:#dad7d1;--ink:#1d2d39;--muted:#64717a;--lcd:#e6efdc;--lcd2:#f3f7ed;--lcd-ink:#4b5651;--silver1:#fcfcfb;--silver2:#d7d9d7;--silver3:#b8bab8;--orange1:#efb46c;--orange2:#d88833;--orange3:#be6c22}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Segoe UI",Tahoma,sans-serif;background:radial-gradient(circle at top left,rgba(26,82,72,.12),transparent 25%),linear-gradient(180deg,var(--bg),var(--bg2));color:var(--ink)}button{font:inherit}
+.stage{width:min(100%,430px);padding:14px}.remote{position:relative;padding:14px 22px 18px;border-radius:34px;background:linear-gradient(180deg,#fff,var(--remote) 38%,var(--remote-edge));box-shadow:inset 0 2px 1px rgba(255,255,255,.95),0 28px 40px rgba(20,35,48,.18)}.remote:before,.remote:after{content:"";position:absolute;top:10px;bottom:10px;width:12px;border-radius:18px;background:linear-gradient(180deg,#e8ecee,#c8ced2)}.remote:before{left:6px}.remote:after{right:6px}
+.screen-shell{margin:0 auto 16px;width:100%;padding:14px 12px 12px;border-radius:12px;background:linear-gradient(180deg,#0f1418,#1a2126 18%,#10161b);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}.screen{position:relative;min-height:220px;padding:12px 12px 16px;border-radius:3px;background:linear-gradient(180deg,var(--lcd2),var(--lcd));color:var(--lcd-ink);overflow:hidden}.screen:before,.screen:after{content:"";position:absolute;top:0;bottom:0;width:1px;background:rgba(75,86,81,.22)}.screen:before{left:36px}.screen:after{right:36px}
+.lcd-top,.lcd-mid{position:relative;z-index:1}.lcd-top{display:flex;justify-content:space-between;font-size:.9rem;font-weight:700;letter-spacing:.08em}.lcd-icons{display:flex;justify-content:space-between;align-items:flex-start;margin-top:8px;font-size:1rem}.lcd-temp{display:flex;justify-content:center;align-items:flex-start;gap:4px;margin-top:6px;font-family:"Courier New",monospace;color:#5a6460}.lcd-temp strong{font-size:5.4rem;line-height:.9;font-weight:700}.lcd-temp span{font-size:2rem;font-weight:700;padding-top:16px}.lcd-mid{text-align:center;margin-top:4px;font-size:.96rem;font-weight:700}.lcd-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:1rem;font-weight:700}.lcd-flag-row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px;font-size:.92rem}.lcd-note{margin-top:8px;font-size:.78rem;line-height:1.3;opacity:.82;text-align:center}.lcd-logo{position:absolute;right:12px;bottom:10px;font-size:.78rem;font-weight:800;letter-spacing:.24em;opacity:.18}
+.button-grid{display:grid;gap:10px}.button-row-2{grid-template-columns:repeat(2,minmax(0,1fr))}.button-row-3{grid-template-columns:repeat(3,minmax(0,1fr))}.button-row-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.btn{min-height:38px;padding:0 8px;border:1px solid rgba(95,101,106,.55);border-radius:999px;background:linear-gradient(180deg,var(--silver1),var(--silver2) 58%,var(--silver3));color:#33424c;box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 2px 3px rgba(0,0,0,.12);font-size:.76rem;font-weight:800;letter-spacing:.03em;cursor:pointer}.btn:active{transform:translateY(1px)}.btn.active{background:linear-gradient(180deg,#f5d6b0,var(--orange1) 58%,var(--orange2));border-color:rgba(163,97,29,.7);color:#5a2a00}.btn.soft{font-size:.72rem}
+.power-row{display:grid;grid-template-columns:1fr 74px 1fr;gap:10px;align-items:center;margin:12px 0 10px}.power-btn{width:74px;height:74px;border:0;border-radius:999px;background:radial-gradient(circle at 35% 30%,#ffd8a3,var(--orange1) 28%,var(--orange2) 62%,var(--orange3));color:#5e2e05;font-weight:900;letter-spacing:.05em;box-shadow:inset 0 2px 4px rgba(255,255,255,.6),0 10px 18px rgba(190,108,34,.28);cursor:pointer}.power-btn.on{box-shadow:0 0 0 5px rgba(239,180,108,.2),inset 0 2px 4px rgba(255,255,255,.6),0 10px 18px rgba(190,108,34,.28)}.rule{height:3px;border-radius:99px;background:linear-gradient(90deg,transparent,#d3d5d3 22%,#b5b7b5 50%,#d3d5d3 78%,transparent);margin:6px 22px 8px}
+.connection-status{padding:10px 12px;border-radius:8px;background:rgba(255,200,0,.15);border-left:3px solid #ffc800;margin-bottom:10px;font-size:.85rem;font-weight:600}.connection-status.connected{background:rgba(16,200,100,.15);border-left-color:#10c864}.connection-status.error{background:rgba(220,80,80,.15);border-left-color:#dc5050}
+.footer{margin-top:14px;padding:12px 0 10px;border-radius:0 0 14px 14px;background:linear-gradient(180deg,#151b20,#0d1115);color:#eef3f6;text-align:center}.footer strong{display:block;font-size:1.55rem;letter-spacing:.08em}.footer span{display:block;margin-top:6px;font-size:.76rem;color:#c6d0d8;min-height:18px}.chip{opacity:.55}.chip.on{opacity:1}
+@media(max-width:380px){.stage{padding:8px}.remote{padding:12px 18px 16px}.power-row{grid-template-columns:1fr 64px 1fr}.power-btn{width:64px;height:64px}.btn{font-size:.7rem}.screen{min-height:205px}.lcd-temp strong{font-size:4.8rem}}
+</style>
+</head>
+<body>
+<main class="stage">
+<div class="connection-status" id="connStatus">Connecting...</div>
+<div class="remote">
+<div class="screen-shell"><div class="screen">
+<div class="lcd-top"><span id="lcdFanTop">FAN AUTO</span><span id="lcdPowerTop">OFF</span></div>
+<div class="lcd-icons"><span id="lcdLeftIcon">AIR</span><span id="lcdSwingTop">AUTO</span><span id="lcdRightIcon">WIFI</span></div>
+<div class="lcd-temp"><strong id="lcdDigits">--</strong><span id="lcdUnit">C</span></div>
+<div id="lcdMode" class="lcd-mid">AUTO</div>
+<div class="lcd-row"><span id="lcdTimer">TIMER OFF</span><span id="lcdDisplaySource">SET TEMP</span></div>
+<div class="lcd-flag-row"><span id="flagSleep" class="chip">SLEEP</span><span id="flagTurbo" class="chip">TURBO</span><span id="flagEco" class="chip">ECO</span><span id="flagIFeel" class="chip">I FEEL</span></div>
+<div class="lcd-flag-row"><span id="flagXFan" class="chip">X-FAN</span><span id="flagLight" class="chip">LIGHT</span><span id="flagWifi" class="chip">WIFI</span><span id="flagDisplay" class="chip">DISPLAY</span></div>
+<div id="lcdNote" class="lcd-note">Waiting for device state...</div><div class="lcd-logo">NAZMUR</div></div></div>
+<div class="button-grid button-row-2"><button class="btn" onclick="sendButton('mode')">MODE</button><button class="btn" onclick="sendButton('fan')">FAN</button></div>
+<div class="rule"></div>
+<div class="power-row"><button class="btn soft" onclick="sendButton('swing')">SWING V</button><button id="powerBtn" class="power-btn" onclick="sendButton('power')">POWER</button><button class="btn soft" onclick="sendButton('temp_up')">TEMP UP</button></div>
+<div class="button-grid button-row-3"><button class="btn soft" onclick="sendButton('swing_h')">SWING H</button><button id="btnTurbo" class="btn" onclick="sendButton('turbo')">TURBO</button><button class="btn soft" onclick="sendButton('temp_down')">TEMP DN</button></div>
+<div class="button-grid button-row-2" style="margin-top:10px"><button id="btnSleep" class="btn" onclick="sendButton('sleep')">SLEEP</button><button id="btnIFeel" class="btn" onclick="sendButton('ifeel')">I FEEL</button></div>
+<div class="button-grid button-row-2" style="margin-top:10px"><button class="btn" onclick="sendButton('timer')">TIMER</button><button id="btnDisplay" class="btn" onclick="sendButton('display')">DISPLAY</button></div>
+<div class="button-grid button-row-3" style="margin-top:10px"><button id="btnWifi" class="btn" onclick="sendButton('wifi')">WIFI</button><button id="btnEco" class="btn" onclick="sendButton('energy')">ECO</button><button id="btnLight" class="btn" onclick="sendButton('light')">LIGHT</button></div>
+<div class="button-grid button-row-4" style="margin-top:10px"><button id="modeAuto" class="btn soft" onclick="sendButton('auto')">AUTO</button><button id="modeCool" class="btn soft" onclick="sendButton('cool')">COOL</button><button id="modeDry" class="btn soft" onclick="sendButton('dry')">DRY</button><button id="modeHeat" class="btn soft" onclick="sendButton('heat')">HEAT</button></div>
+<div class="footer"><strong>GREE</strong><span id="msg">Connecting to MQTT...</span></div></div></main>
+
+<script>
+// MQTT Configuration
+const MQTT_BROKER_HOST = '128.199.20.163';
+const MQTT_BROKER_PORT = 8084;  // Browser MQTT must use a WSS listener from GitHub Pages.
+const MQTT_USE_SSL = true;
+const MQTT_USERNAME = 'amiuser';
+const MQTT_PASSWORD = 'password';
+const MQTT_TOPIC_COMMAND = 'ir';
+const MQTT_TOPIC_STATUS = 'ir/status';
+
+let client = null;
+let isConnected = false;
+let PahoClient = null;      // Will be set to the correct Client class
+let PahoMessage = null;     // Will be set to the correct Message class
+
+const app = {
+  state: 'boot',
+  status: null,
+  busy: false
+};
+
+// Normalize Paho module - handle both jsDelivr and unpkg structures
+function initializePahoAPI() {
+  if (Paho.MQTT && Paho.MQTT.Client) {
+    // jsDelivr structure
+    PahoClient = Paho.MQTT.Client;
+    PahoMessage = Paho.MQTT.Message;
+    console.log('Using Paho structure: Paho.MQTT.Client');
+  } else if (Paho.Client) {
+    // unpkg structure
+    PahoClient = Paho.Client;
+    PahoMessage = Paho.Message;
+    console.log('Using Paho structure: Paho.Client');
+  }
+}
+
+const $ = id => document.getElementById(id);
+
+function setMessage(text, isError = false) {
+  const n = $('msg');
+  n.textContent = text;
+  n.style.color = isError ? '#ffd3c2' : '#c6d0d8';
+}
+
+function updateConnectionStatus(connected, message) {
+  const el = $('connStatus');
+  isConnected = connected;
+  el.className = 'connection-status ' + (connected ? 'connected' : 'error');
+  el.textContent = message || (connected ? 'Γ£ô Connected to device' : 'ΓÜá Disconnected');
+}
+
+function setChip(id, active) {
+  $(id).className = active ? 'chip on' : 'chip';
+}
+
+function setActive(id, active) {
+  $(id).classList.toggle('active', Boolean(active));
+}
+
+function updateButtons(g) {
+  $('powerBtn').classList.toggle('on', Boolean(g && g.power));
+  setActive('btnTurbo', g && g.turbo);
+  setActive('btnSleep', g && g.sleep);
+  setActive('btnIFeel', g && g.ifeel);
+  setActive('btnDisplay', g && g.display_source !== 'off');
+  setActive('btnWifi', g && g.wifi);
+  setActive('btnEco', g && g.eco);
+  setActive('btnLight', g && g.light);
+  setActive('modeAuto', g && g.mode === 'auto');
+  setActive('modeCool', g && g.mode === 'cool');
+  setActive('modeDry', g && g.mode === 'dry');
+  setActive('modeHeat', g && g.mode === 'heat');
+}
+
+function renderRemote(g) {
+  $('lcdFanTop').textContent = g ? `FAN ${g.fan_label.toUpperCase()}` : 'FAN AUTO';
+  $('lcdPowerTop').textContent = g && g.power ? 'OPER' : 'OFF';
+  $('lcdLeftIcon').textContent = g ? g.swing_vertical_label.toUpperCase() : 'AIR';
+  $('lcdSwingTop').textContent = g ? g.mode_label.toUpperCase() : 'AUTO';
+  $('lcdRightIcon').textContent = g && g.wifi ? 'WIFI' : '';
+  $('lcdDigits').textContent = g ? g.display_value : '--';
+  $('lcdUnit').textContent = g && g.display_value !== '--' ? 'C' : '';
+  $('lcdMode').textContent = g ? g.mode_label.toUpperCase() : 'AUTO';
+  $('lcdTimer').textContent = g ? `TIMER ${g.timer_label.toUpperCase()}` : 'TIMER OFF';
+  $('lcdDisplaySource').textContent = g ? g.display_source_label.toUpperCase() : 'SET TEMP';
+  $('lcdNote').textContent = g ? g.display_note : 'Waiting for device state...';
+  
+  setChip('flagSleep', Boolean(g && g.sleep));
+  setChip('flagTurbo', Boolean(g && g.turbo));
+  setChip('flagEco', Boolean(g && g.eco));
+  setChip('flagIFeel', Boolean(g && g.ifeel));
+  setChip('flagXFan', Boolean(g && g.xfan));
+  setChip('flagLight', Boolean(g && g.light));
+  setChip('flagWifi', Boolean(g && g.wifi));
+  setChip('flagDisplay', Boolean(g && g.display_source !== 'off'));
+  
+  updateButtons(g);
+}
+
+function connectMQTT() {
+  if (location.protocol === 'https:' && !MQTT_USE_SSL) {
+    updateConnectionStatus(false, 'Secure WebSocket required');
+    setMessage('GitHub Pages requires WSS MQTT. Enable WSS on the broker, then use MQTT_USE_SSL=true.', true);
+    return;
+  }
+
+  const clientId = 'web-remote-' + Math.random().toString(36).substr(2, 9);
+  
+  // Paho API: new Client(host, port, path, clientId) - path can indicate SSL
+  try {
+    // Use useSSL flag to force wss:// instead of ws://
+    client = new PahoClient(MQTT_BROKER_HOST, MQTT_BROKER_PORT, '/', clientId);
+  } catch (e) {
+    console.error('Failed to create MQTT client:', e);
+    setMessage('ERROR: Failed to create MQTT client', true);
+    return;
+  }
+  
+  client.onConnectionLost = (responseObject) => {
+    console.log('MQTT connection lost');
+    updateConnectionStatus(false, 'ΓÜá Disconnected from device');
+    setMessage('Connection lost. Reconnecting...', true);
+    setTimeout(connectMQTT, 3000);
+  };
+  
+  client.onMessageArrived = (message) => {
+    try {
+      if (message.destinationName === MQTT_TOPIC_STATUS) {
+        const payload = message.payloadString;
+        const data = JSON.parse(payload);
+        app.status = data;
+        renderRemote(data.gree_state);
+        updateConnectionStatus(true, 'Γ£ô Connected to device');
+        setMessage(data.last_event || 'Ready', false);
+      }
+    } catch (e) {
+      console.error('Error parsing MQTT message:', e);
+    }
+  };
+  
+  const options = {
+    userName: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
+    useSSL: MQTT_USE_SSL,  // Force WSS for HTTPS pages
+    onSuccess: () => {
+      console.log('MQTT connected');
+      updateConnectionStatus(true, 'Γ£ô Connected to device');
+      client.subscribe(MQTT_TOPIC_STATUS);
+      setMessage('Ready', false);
+    },
+    onFailure: (error) => {
+      console.error('MQTT connection failed:', error);
+      updateConnectionStatus(false, `ΓÜá Connection failed`);
+      setMessage('Failed: enable MQTT over WSS on 128.199.20.163:8084, then reload', true);
+      setTimeout(connectMQTT, 5000);
+    }
+  };
+  
+  client.connect(options);
+}
+
+async function sendButton(buttonId) {
+  if (app.busy || !isConnected) return;
+  app.busy = true;
+  
+  try {
+    const message = new PahoMessage(JSON.stringify({ button: buttonId }));  // Use normalized PahoMessage
+    message.destinationName = MQTT_TOPIC_COMMAND;
+    message.qos = 1;
+    client.send(message);
+    setMessage(`Sent: ${buttonId}`, false);
+  } catch (e) {
+    setMessage(`Error: ${e.message}`, true);
+  } finally {
+    app.busy = false;
+  }
+}
+
+// Wait for Paho MQTT library and initialize
+let initRetries = 0;
+const MAX_RETRIES = 100; // 10 seconds max (100 * 100ms)
+
+function initializeApp() {
+  // Handle both module structures: Paho.MQTT.Client (jsDelivr) and Paho.Client (unpkg)
+  const hasPahoClient = (typeof Paho !== 'undefined') && (
+    (Paho.MQTT && Paho.MQTT.Client) ||  // jsDelivr structure
+    (Paho.Client)                        // unpkg structure
+  );
+  
+  if (hasPahoClient) {
+    console.log('Γ£ô Paho MQTT library ready - initializing app');
+    initializePahoAPI();  // Normalize the API
+    connectMQTT();
+  } else if (initRetries < MAX_RETRIES) {
+    initRetries++;
+    if (initRetries % 20 === 0) {
+      console.log(`ΓÅ│ Checking for Paho... attempt ${initRetries}/${MAX_RETRIES}`);
+    }
+    setTimeout(initializeApp, 100);
+  } else {
+    console.error('Γ£ù Paho MQTT library failed to load after 10 seconds');
+    console.error(`  Paho defined: ${typeof Paho !== 'undefined'}`);
+    console.error(`  Paho.MQTT.Client: ${typeof Paho?.MQTT?.Client}`);
+    console.error(`  Paho.Client: ${typeof Paho?.Client}`);
+    setMessage('ERROR: MQTT library failed to load', true);
+  }
+}
+
+// Dynamically load Paho MQTT library and initialize when loaded
+let pahoLoaded = false;
+
+function loadPahoLibrary(cdnUrl = 'https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.js') {
+  // Safety check - ensure cdnUrl is a string (event object protection)
+  if (typeof cdnUrl !== 'string') {
+    cdnUrl = 'https://cdn.jsdelivr.net/npm/paho-mqtt@1.1.0/paho-mqtt.js';
+  }
+  
+  console.log(`Loading Paho MQTT library from: ${cdnUrl}`);
+  const script = document.createElement('script');
+  script.src = cdnUrl;
+  script.async = true;
+  
+  script.onload = () => {
+    console.log('Γ£ô Paho script loaded from CDN');
+    pahoLoaded = true;
+    // Use setTimeout to ensure script is executed
+    setTimeout(() => {
+      if (typeof Paho !== 'undefined' && Paho.MQTT) {
+        console.log('Γ£ô Paho MQTT client available');
+        initializeApp();
+      } else {
+        console.log('ΓÅ│ Paho loaded but not yet available, retrying...');
+        setTimeout(initializeApp, 100);
+      }
+    }, 50);
+  };
+  
+  script.onerror = () => {
+    console.error(`Γ£ù Failed to load Paho from: ${cdnUrl}`);
+    // Try fallback CDN
+    if (cdnUrl !== 'https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.js') {
+      console.log('Trying fallback CDN...');
+      setTimeout(() => loadPahoLibrary('https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt.js'), 500);
+    } else {
+      setMessage('ERROR: Cannot load MQTT library from any CDN', true);
+    }
+  };
+  
+  document.head.appendChild(script);
+}
+
+// Start loading Paho library immediately
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => loadPahoLibrary());
+} else {
+  loadPahoLibrary();
+}
+</script>
+</body>
+</html>
+
