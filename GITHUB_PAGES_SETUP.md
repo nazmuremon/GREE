@@ -101,7 +101,7 @@ If your MQTT broker details change, edit `index.html`:
 ```javascript
 // Line ~85 in index.html
 const MQTT_BROKER_HOST = '128.199.20.163';
-const MQTT_BROKER_PORT = 8083; // WebSocket port after enabling it on the broker
+const MQTT_BROKER_PORT = 8084; // WSS WebSocket port for GitHub Pages
 const MQTT_USERNAME = ''; // Use username amiuser and password password
 const MQTT_PASSWORD = ''; // Use username amiuser and password password
 ```
@@ -219,4 +219,5 @@ For MQTT issues:
 ---
 
 **Your web UI is now globally accessible from any device!** ðŸŒ
+
 

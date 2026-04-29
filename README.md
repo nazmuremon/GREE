@@ -24,18 +24,18 @@ Common broker WebSocket ports to enable:
 - `8084` for `wss://`
 - `9001` for Mosquitto-style WebSocket setups
 
-After enabling WebSockets, update these constants in `index.html`:
+For the live GitHub Pages site, enable a TLS WebSocket listener and use:
 
 ```javascript
 const MQTT_BROKER_HOST = '128.199.20.163';
-const MQTT_BROKER_PORT = 8083;
-const MQTT_USE_SSL = false;
+const MQTT_BROKER_PORT = 8084;
+const MQTT_USE_SSL = true;
 const MQTT_TOPIC_COMMAND = 'ir';
 const MQTT_TOPIC_STATUS = 'ir/status';
 ```
 
-Use `MQTT_USE_SSL = true` only when the broker has a valid TLS WebSocket
-listener, usually on `8084`.
+Plain `ws://` works only from a plain HTTP page. GitHub Pages is HTTPS, so it
+requires `wss://`.
 
 ## Deploy
 

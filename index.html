@@ -45,8 +45,8 @@
 <script>
 // MQTT Configuration
 const MQTT_BROKER_HOST = '128.199.20.163';
-const MQTT_BROKER_PORT = 1883;  // TCP MQTT. Browser use requires WebSocket support on the broker.
-const MQTT_USE_SSL = false;
+const MQTT_BROKER_PORT = 8084;  // Browser MQTT must use a WSS listener from GitHub Pages.
+const MQTT_USE_SSL = true;
 const MQTT_USERNAME = 'amiuser';
 const MQTT_PASSWORD = 'password';
 const MQTT_TOPIC_COMMAND = 'ir';
@@ -142,6 +142,12 @@ function renderRemote(g) {
 }
 
 function connectMQTT() {
+  if (location.protocol === 'https:' && !MQTT_USE_SSL) {
+    updateConnectionStatus(false, 'Secure WebSocket required');
+    setMessage('GitHub Pages requires WSS MQTT. Enable WSS on the broker, then use MQTT_USE_SSL=true.', true);
+    return;
+  }
+
   const clientId = 'web-remote-' + Math.random().toString(36).substr(2, 9);
   
   // Paho API: new Client(host, port, path, clientId) - path can indicate SSL
@@ -189,7 +195,7 @@ function connectMQTT() {
     onFailure: (error) => {
       console.error('MQTT connection failed:', error);
       updateConnectionStatus(false, `ΓÜá Connection failed`);
-      setMessage('Failed: browser MQTT needs a WebSocket listener, not raw TCP 1883', true);
+      setMessage('Failed: enable MQTT over WSS on 128.199.20.163:8084, then reload', true);
       setTimeout(connectMQTT, 5000);
     }
   };

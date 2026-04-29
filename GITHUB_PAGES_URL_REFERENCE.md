@@ -49,7 +49,7 @@ Setup URL:             http://192.168.4.1
 ### MQTT Configuration
 ```
 Broker Host:    128.199.20.163
-Broker Port:    1883 (ESP32 TCP); browser needs a WebSocket port
+Broker Port:    1883 (ESP32 TCP); 8084 WSS for GitHub Pages
 Username:       amiuser
 Password:       password
 Command Topic:  ir
@@ -272,7 +272,7 @@ WiFi SSID:              [                        ]
 WiFi Password:          [                        ]
 Backup URL:             http://192.168.4.1 (provisioning)
 MQTT Broker:            128.199.20.163
-MQTT Port:              1883 (ESP32 TCP); Web UI needs WebSocket
+MQTT Port:              1883 (ESP32 TCP); 8084 WSS for Web UI
 ```
 
 Print this page or save as PDF for future reference!
@@ -282,4 +282,5 @@ Print this page or save as PDF for future reference!
 **Last Updated**: April 28, 2026  
 **Version**: MQTT Architecture  
 **Status**: Production Ready
+
 
