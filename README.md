@@ -6,7 +6,8 @@ documentation and web files.
 ## Folder Layout
 
 - `esp-firmware/` - the only PlatformIO project to build and flash to ESP32
-- `web/` - standalone browser remote UI source`n- `index.html` - GitHub Pages entry point copied from `web/index.html`
+- `web/` - standalone browser remote UI source
+- `index.html` - GitHub Pages entry point copied from `web/index.html`
 - `docs/` - documentation, guides, diagrams, and reference pages
 - `github-pages-site/` - separate GitHub Pages checkout/mirror
 
